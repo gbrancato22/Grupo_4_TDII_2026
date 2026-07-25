@@ -53,7 +53,7 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
+int modo = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,7 +88,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+ uint16_t LEDS[3] = {LD1_Pin,LD2_Pin,LD3_Pin}; // SE CREA EL VECTOR CON LOS LEDS
+ uint16_t Pulsador;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -112,11 +113,41 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  Pulsador = HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin);
+	  if(Pulsador == 0){
+		  HAL_Delay(30);
+		  if (modo == 0){
+			  modo = 1;
+		  }
+		  else {
+			  modo = 0;
+		  }
+		  while (HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin)==0){
 
+		  }
+	  }
+	  if (modo == 0){
+		  for (int i = 0; i<3; i++){
+			  HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET);
+			  HAL_Delay(200);
+			  HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET);
+			  HAL_Delay(200);
+		  }
+	  }
+		  else{
+    		  for (int i = 2; i>=0; i--){
+	 			  HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET);
+	  			  HAL_Delay(200);
+	 			  HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET);
+			 	  HAL_Delay(200);
+			   }
+
+	  }
+
+	  		  }
     /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
 }
+  /* USER CODE END 3 */
 
 /**
   * @brief System Clock Configuration
