@@ -79,8 +79,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	uint16_t LEDS[3] = {LD1_Pin, LD2_Pin, LD3_Pin}; //Se crea el vector de leds
-	uint16_t User_Button;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -113,29 +112,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	 User_Button = HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin);
-	 HAL_GPIO_TogglePin(GPIOC, USER_Btn_Pin);
-	      if (User_Button == 1)
-	  	{
-	 for (uint8_t i = 0; i < 3; i++) //funcion for para ecendido secuencial
-	  	  {
-	  		HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET); // encendemos led i
-	  	  	HAL_Delay(200);
-	  	  	HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET); // apagamos led i
-	  	  	HAL_Delay(200);
-	  	  }
+
     /* USER CODE BEGIN 3 */
-        }
-      else
-	    {
-    	  for (uint8_t i = 0; i < 3; i--) //funcion for para ecendido secuencial
-    	  	  	  {
-    	  	  		HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET); // encendemos led i
-    	  	  	  	HAL_Delay(200);
-    	  	  	  	HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET); // apagamos led i
-    	  	  	  	HAL_Delay(200);
-    	  	  	  }
-	     }
+  }
   /* USER CODE END 3 */
 }
 
@@ -157,7 +136,7 @@ void SystemClock_Config(void)
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
