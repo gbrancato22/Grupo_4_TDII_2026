@@ -110,85 +110,117 @@ uint8_t secuencia = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	Pulsador=HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin);
-	if(Pulsador == 0)
-	{
-	HAL_Delay(30);
-	if(HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == 0)
-	{
-	 secuencia++;
-	 if (secuencia > 3)
-	 {
-	  secuencia = 0; // si supera la secuencia 4 vuelve a la 1
-	   }
-	      // para evitar que un LED quede encendido por error.
-	     for (int i = 0; i < 3; i++) {
-	       HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET);
-	   }
+    /* USER CODE BEGIN WHILE */
+    while (1)
+    {
+      // 1. LECTURA DEL PULSADOR
+      if (HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == GPIO_PIN_SET)
+      {
+        HAL_Delay(30); // Anti-rebote simple
+        if (HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == GPIO_PIN_SET)
+        {
+          secuencia++;
+          if (secuencia > 3)
+          {
+            secuencia = 0;
+          }
 
-	   // Espera a que se suelte el pulsador,evitando caer en una secuencia aleatoria
-	   while (HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == 0) {}
-	      }
-	      }
-	if (secuencia == 0)
-	      {
-	          for (int i = 0; i < 3; i++) {
-	              HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET);
-	              HAL_Delay(150);
-	              HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET);
-	              HAL_Delay(150);
-	          }
-	      }
-	else if (secuencia == 1)
-	      {
-	          for (int i = 0; i < 3; i++) {
-	              HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_SET);
-	          }
-	          HAL_Delay(300);
+          // Apagar todos los LEDs antes de cambiar
+          HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_RESET);
+          HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_RESET);
 
-	          for (int i = 0; i < 3; i++) {
-	              HAL_GPIO_WritePin(GPIOB, LEDS[i], GPIO_PIN_RESET);
-	          }
-	          HAL_Delay(300);
-	      }
-	else if (secuencia == 2)
-	      {
-	          for (int i = 0; i < 6; i++) {
+          // Esperar a soltar el botón
+          while (HAL_GPIO_ReadPin(GPIOC, USER_Btn_Pin) == GPIO_PIN_SET) {}
+        }
+      }
 
-	              HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+      // 2. SECUENCIAS
 
-	              if (i == 0 || i == 3) {
-	                  HAL_GPIO_TogglePin(GPIOB, LEDS[1]);
-	              }
+      // --- SECUENCIA 1: Alternancia de 150 ms en cascada ---
+      if (secuencia == 0)
+      {
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_SET);
+        HAL_Delay(150);
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_RESET);
+        HAL_Delay(150);
 
-	              if (i == 0) {
-	                  HAL_GPIO_TogglePin(GPIOB, LEDS[2]);
-	              }
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_SET);
+        HAL_Delay(150);
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_RESET);
+        HAL_Delay(150);
 
-	              HAL_Delay(100);
-	          }
-	      }
-	else if (secuencia == 3)
-	      {
-	          HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_SET);
-	          HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_SET);
-	          HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_RESET);
-	          HAL_Delay(150);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_SET);
+        HAL_Delay(150);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_RESET);
+        HAL_Delay(150);
+      }
 
-	          HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_RESET);
-	          HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_RESET);
-	          HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_SET);
-	          HAL_Delay(150);
-	      }
+      // --- SECUENCIA 2: Parpadeo simultáneo de 300 ms ---
+      else if (secuencia == 1)
+      {
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_SET);
+        HAL_Delay(300);
 
-    /* USER CODE END WHILE */
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_RESET);
+        HAL_Delay(300);
+      }
 
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+      // --- SECUENCIA 3: Forma lineal y sencilla sin lógica compleja ---
+      // Total del bloque: 600 ms
+      else if (secuencia == 2)
+      {
+        // Paso 1 (0 ms): Cambian los tres
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_GPIO_TogglePin(GPIOB, LEDS[1]);
+        HAL_GPIO_TogglePin(GPIOB, LEDS[2]);
+        HAL_Delay(100);
+
+        // Paso 2 (100 ms): Solo cambia LED1
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_Delay(100);
+
+        // Paso 3 (200 ms): Solo cambia LED1
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_Delay(100);
+
+        // Paso 4 (300 ms): Cambian LED1 y LED2
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_GPIO_TogglePin(GPIOB, LEDS[1]);
+        HAL_Delay(100);
+
+        // Paso 5 (400 ms): Solo cambia LED1
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_Delay(100);
+
+        // Paso 6 (500 ms): Solo cambia LED1
+        HAL_GPIO_TogglePin(GPIOB, LEDS[0]);
+        HAL_Delay(100);
+      }
+
+      // --- SECUENCIA 4: Inversos de 150 ms ---
+      else if (secuencia == 3)
+      {
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_RESET);
+        HAL_Delay(150);
+
+        HAL_GPIO_WritePin(GPIOB, LEDS[0], GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[2], GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, LEDS[1], GPIO_PIN_SET);
+        HAL_Delay(150);
+      }
+
+      /* USER CODE END WHILE */
+
+      /* USER CODE BEGIN 3 */
+    }
+    /* USER CODE END 3 */
 }
 
 /**
