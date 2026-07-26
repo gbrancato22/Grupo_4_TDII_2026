@@ -2,7 +2,7 @@
  * API_GPIO.c
  *
  *  Created on: 25 jul 2026
- *      Author: Gabriel Brancato
+ *      Author: Gandur Tomas
   */
 /* includes */
 #include "main.h"

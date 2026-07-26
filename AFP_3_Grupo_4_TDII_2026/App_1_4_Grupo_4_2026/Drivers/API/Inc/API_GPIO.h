@@ -2,7 +2,7 @@
  * API_GPIO.h
  *
  *  Created on: 25 jul 2026
- *      Author: Gabriel Brancato
+ *      Author: Altamiranda Maximo Emmanuel
  */
 
 #ifndef API_INC_API_GPIO_H_
