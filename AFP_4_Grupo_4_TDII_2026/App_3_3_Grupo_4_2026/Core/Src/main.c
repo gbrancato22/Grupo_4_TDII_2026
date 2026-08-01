@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
-
+#include "API_GPIO.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -32,6 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define LED1 LD1_Pin //led green
+#define LED2 LD2_Pin //led blue
+#define LED3 LD3_Pin // led red
 
 /* USER CODE END PD */
 
@@ -53,12 +56,12 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
+int modo = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
+//static void MX_GPIO_Init(void); SE ELIMINA PARA INICIALIZAR EN DRIVER
 static void MX_ETH_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
@@ -88,7 +91,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+ uint16_t LEDS[3] = {LED1,LED2,LED3}; // SE CREA EL VECTOR CON LOS LEDS
+ uint8_t secuencia = 0;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -113,10 +117,94 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+	  if(readButton_GPIO() == 1){
+	  		  HAL_Delay(30);
+	  		  if(readButton_GPIO() == 1){
+	  			  secuencia ++;
+	  			  if (secuencia > 3){
+	  				 secuencia = 0;
+	  			  }
+	  			  writeLedOff_GPIO(LEDS[0]);
+	  			  writeLedOff_GPIO(LEDS[1]);
+	  			  writeLedOff_GPIO(LEDS[2]);
+	  			  while (readButton_GPIO() == 1){}
+	  		  }
+	  		  }
+	  		// SECUENCIAS
+
+	  		      // --- SECUENCIA 1: Alternancia de 150 ms en cascada ---
+	  		      if (secuencia == 0)
+	  		      {
+	  		        for(int i = 0; i<3; i++){
+	  		        	writeLedOn_GPIO(LEDS[i]);
+	  		        	HAL_Delay(150);
+	  		        	writeLedOff_GPIO(LEDS[i]);
+	  		        	HAL_Delay(150);
+	  		        }
+	  		      }
+
+	  		      // --- SECUENCIA 2: Parpadeo simultáneo de 300 ms ---
+	  		      else if (secuencia == 1)
+	  		      {
+	  		        writeLedOn_GPIO(LEDS[0]);
+	  		        writeLedOn_GPIO(LEDS[1]);
+	  		        writeLedOn_GPIO(LEDS[2]);
+	  		        HAL_Delay(300);
+	  		        writeLedOff_GPIO(LEDS[0]);
+	  		      	writeLedOff_GPIO(LEDS[1]);
+	  		      	writeLedOff_GPIO(LEDS[2]);
+	  		      	HAL_Delay(300);
+
+
+	  		      }
+
+	  		      // --- SECUENCIA 3: Forma lineal y sencilla sin lógica compleja ---
+	  		      // Total del bloque: 600 ms
+	  		      else if (secuencia == 2)
+	  		      {
+	  		        // Paso 1 (0 ms): Cambian los tres
+	  		    	toggleLed_GPIO(LEDS[0]);
+	  		    	toggleLed_GPIO(LEDS[1]);
+	  		    	toggleLed_GPIO(LEDS[2]);
+	  		    	HAL_Delay(100);
+	  		    	// Paso 2 (100 ms): Solo cambia LED1
+	  		    	toggleLed_GPIO(LEDS[0]);
+	  		    	HAL_Delay(100);
+	  		    	// Paso 3 (200 ms): Solo cambia LED1
+	  		    	toggleLed_GPIO(LEDS[0]);
+	  		        HAL_Delay(100);
+	  		        // Paso 4 (300 ms): Cambian LED1 y LED2
+	  		        toggleLed_GPIO(LEDS[0]);
+	  		        toggleLed_GPIO(LEDS[1]);
+	  		        HAL_Delay(100);
+	  		        // Paso 5 (400 ms): Solo cambia LED1
+	  		        toggleLed_GPIO(LEDS[0]);
+	  		        HAL_Delay(100);
+	  		        // Paso 6 (500 ms): Solo cambia LED1
+	  		        toggleLed_GPIO(LEDS[0]);
+	  		        HAL_Delay(100);
+	  		      }
+
+	  		      // --- SECUENCIA 4: Inversos de 150 ms ---
+	  		      else if (secuencia == 3)
+	  		      {
+	  		    	writeLedOn_GPIO(LEDS[0]);
+	  		    	writeLedOn_GPIO(LEDS[2]);
+	  		    	writeLedOff_GPIO(LEDS[1]);
+	  		    	HAL_Delay(150);
+
+	  		    	writeLedOff_GPIO(LEDS[0]);
+	  		    	writeLedOff_GPIO(LEDS[2]);
+	  		    	writeLedOn_GPIO(LEDS[1]);
+	  		        HAL_Delay(150);
+	  		      }
+
+	  	}
+
+
     /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
 }
+  /* USER CODE END 3 */
 
 /**
   * @brief System Clock Configuration
@@ -280,62 +368,7 @@ static void MX_USB_OTG_FS_PCD_Init(void)
 
 }
 
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
 
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : USER_Btn_Pin */
-  GPIO_InitStruct.Pin = USER_Btn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin|LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
-  GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : USB_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
-}
 
 /* USER CODE BEGIN 4 */
 
