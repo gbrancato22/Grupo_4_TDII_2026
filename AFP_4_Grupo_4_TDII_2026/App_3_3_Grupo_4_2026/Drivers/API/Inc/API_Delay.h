@@ -1,8 +1,8 @@
 /*
  * API_Delay.h
  *
- *  Created on: 29 Jul 2026
- *      Author: Altamiranda Máximo Emmanuel
+ *  Created on: 28 Jul 2026
+ *      Author: Gandur Tomas
  */
 
 #ifndef API_INC_API_DELAY_H_
