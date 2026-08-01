@@ -20,6 +20,7 @@
 #include "main.h"
 #include "string.h"
 #include "API_GPIO.h"
+#include "API_Delay.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -92,6 +93,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
  uint16_t LEDS[3] = {LED1,LED2,LED3}; // SE CREA EL VECTOR CON LOS LEDS
+ delay_t ledDelay;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -107,7 +109,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  delayInit(&ledDelay, 200);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,9 +119,9 @@ int main(void)
     /* USER CODE END WHILE */
 		  for (int i = 0; i<3; i++){
 			  writeLedOn_GPIO(LEDS[i]);
-			  HAL_Delay(200);
+			  while(!delayRead(&ledDelay));   // espera no bloqueante
 			  writeLedOff_GPIO(LEDS[i]);
-			  HAL_Delay(200);
+			  while(!delayRead(&ledDelay));   // espera no bloqueante
 
 	  }
 
