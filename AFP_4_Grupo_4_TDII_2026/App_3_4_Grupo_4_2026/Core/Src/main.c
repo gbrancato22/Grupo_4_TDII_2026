@@ -20,6 +20,7 @@
 #include "main.h"
 #include "string.h"
 #include "API_GPIO.h"
+#include "API_Delay.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -58,6 +59,10 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 int estado = 1;             // Guarda en qué modo de tiempo estamos (1, 2, 3 o 4)
 int tiempo_parpadeo = 100;  // Tiempo actual en milisegundos (empieza en 100)
+
+delay_t delayLeds;          // Estructura para controlar el parpadeo de los LEDs
+uint8_t leds_encendidos = 0; // Para controlar el estado On/Off
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,74 +114,69 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
+  delayInit(&delayLeds, tiempo_parpadeo);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
   while (1)
   {
     /* USER CODE END WHILE */
 
-	  // 1. Revisamos si se presionó el botón onboard
+	  // 1. Lectura del botón y cambio de estado
+	      if (readButton_GPIO() == 1)
+	      {
+	        estado++;
+	        if (estado > 4)
+	        {
+	          estado = 1;
+	        }
 
-	  	      if (readButton_GPIO() == 1)
-	  	      {
-	  	        HAL_Delay(100); // espera para evitar el rebotador del botón
-	  	        estado++;
-	  	        if (estado > 4)
-	  	        {
-	  	          estado = 1; // Si pasa de 4, vuelve a empezar en 1
-	  	        }
+	        // Asignación de tiempo
+	        if (estado == 1)      tiempo_parpadeo = 100;
+	        else if (estado == 2) tiempo_parpadeo = 250;
+	        else if (estado == 3) tiempo_parpadeo = 500;
+	        else if (estado == 4) tiempo_parpadeo = 1000;
 
-	  	        // Asignamos el tiempo según el estado en el que estamos
-	  	        if (estado == 1)
-	  	        {
-	  	          tiempo_parpadeo = 100;
-	  	        }
-	  	        else if (estado == 2)
-	  	        {
-	  	          tiempo_parpadeo = 250;
-	  	        }
-	  	        else if (estado == 3)
-	  	        {
-	  	          tiempo_parpadeo = 500;
-	  	        }
-	  	        else if (estado == 4)
-	  	        {
-	  	          tiempo_parpadeo = 1000;
-	  	        }
+	        // Actualizamos la duración del delay no bloqueante
+	        delayWrite(&delayLeds, tiempo_parpadeo);
 
-	  	        // Esperamos a que se suelte el boton
-	  	        while (readButton_GPIO() == 1)
-	  	        {
+	        // Esperamos a que se suelte el botón
+	        while (readButton_GPIO() == 1);
+	      }
 
-	  	        }
-	  	        HAL_Delay(50); // Pausa para estabilizar
-	  	      }
+	      // 2. Parpadeo no bloqueante
 
-
-	  	      // Encender los 3 leds
-	  	      writeLedOn_GPIO(LEDS[0]);
-	  	      writeLedOn_GPIO(LEDS[1]);
-	  	      writeLedOn_GPIO(LEDS[2]);
-
-	  	      HAL_Delay(tiempo_parpadeo);
-
-	  	      // Apagar los 3 leds
-	  	      writeLedOff_GPIO(LEDS[0]);
-	  	      writeLedOff_GPIO(LEDS[1]);
-	  	      writeLedOff_GPIO(LEDS[2]);
-
-	  	      HAL_Delay(tiempo_parpadeo);
-
+	      if (delayRead(&delayLeds))
+	          {
+	            if (leds_encendidos == 0)
+	            {
+	              writeLedOn_GPIO(LEDS[0]);
+	              writeLedOn_GPIO(LEDS[1]);
+	              writeLedOn_GPIO(LEDS[2]);
+	              leds_encendidos = 1;
+	            }
+	            else
+	            {
+	              writeLedOff_GPIO(LEDS[0]);
+	              writeLedOff_GPIO(LEDS[1]);
+	              writeLedOff_GPIO(LEDS[2]);
+	              leds_encendidos = 0;
+	            }
+	          }
 
 
 	      /* USER CODE END WHILE */
 
 	      /* USER CODE BEGIN 3 */
-	    }
+	    } //cierra el while
+        }  // cierra la funcion main()
 	    /* USER CODE END 3 */
-	  }
+
 
 /**
   * @brief System Clock Configuration
