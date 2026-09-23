@@ -121,7 +121,7 @@ int main(void)
 
 	  	      if (readButton_GPIO() == 1)
 	  	      {
-	  	        HAL_Delay(100); // espera para evitar el rebotador del botón
+	  	        HAL_Delay(30); // espera para evitar el rebotador del botón
 	  	        estado++;
 	  	        if (estado > 4)
 	  	        {

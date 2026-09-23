@@ -57,7 +57,6 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-int modo = 0;
 delay_t delay_debounce;
 delay_t delay_secuencia;
 int paso = 0;

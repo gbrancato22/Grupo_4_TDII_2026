@@ -130,7 +130,7 @@ int main(void)
 	  			  modo = 0;
 	  		  }
 	  		  while(readButton_GPIO()==0){
-	  		}
+
 	  		if(modo == 0){
 	  			for (int i=0;i<3;i++){
 	  				writeLedOn_GPIO(LEDS[i]);
@@ -147,7 +147,8 @@ int main(void)
 	  			    while(!delayRead(&ledDelay));
 	  			}
 	  		}
-	  	}
+	  		}
+	  		  }
 	  	  }
 
     /* USER CODE BEGIN 3 */
