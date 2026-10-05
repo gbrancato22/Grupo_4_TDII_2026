@@ -21,6 +21,7 @@
 #include "string.h"
 #include "API_GPIO.h"
 #include "API_Delay.h"
+#include "API_Debounce.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -57,14 +58,10 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-delay_t delay_rebote;
-delay_t delay_secuencia;
-int paso = 0;
-int boton_previo = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-
 void SystemClock_Config(void);
 //static void MX_GPIO_Init(void); SE ELIMINA PARA INICIALIZAR EN DRIVER
 static void MX_ETH_Init(void);
@@ -87,8 +84,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  delayInit(&delay_rebote, 30);
-  delayInit(&delay_secuencia, 150);
 
   /* USER CODE END 1 */
 
@@ -99,7 +94,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
  uint16_t LEDS[3] = {LED1,LED2,LED3}; // SE CREA EL VECTOR CON LOS LEDS
- uint8_t secuencia = 0;
+ delay_t ledDelay;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -115,103 +110,23 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  delayInit(&ledDelay, 200);
   /* USER CODE END 2 */
 
   /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    while (1)
-    {
-      /* USER CODE END WHILE */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+	  for (int i = 0; i<3; i++){
+	          writeLedOn_GPIO(LEDS[i]);
+	          while(!delayRead(&ledDelay)){}   // espera no bloqueante
+			  writeLedOff_GPIO(LEDS[i]);
+			  while(!delayRead(&ledDelay));   // espera no bloqueante
 
-      /* USER CODE BEGIN 3 */
-
-      if(readButton_GPIO() == 1) {
-
-          if(boton_previo == 0) {
-
-              if(delayRead(&delay_rebote) == true) { // Reemplaza HAL_Delay(30)
-                  secuencia++;
-                  if (secuencia > 3) {
-                      secuencia = 0;
-                  }
-
-                  writeLedOff_GPIO(LEDS[0]);
-                  writeLedOff_GPIO(LEDS[1]);
-                  writeLedOff_GPIO(LEDS[2]);
-
-                  boton_previo = 1; // Reemplaza while(readButton_GPIO() == 1){}
-                  paso = 0;         // Reseteamos las luces al cambiar de secuencia
-              }
-          }
-      } else {
-          boton_previo = 0;
-          delayInit(&delay_rebote, 30);
-      }
-
-
-      //  SECUENCIAS
-
-
-      if(delayRead(&delay_secuencia) == true) {
-
-          //SECUENCIA 1:
-          if (secuencia == 0) {
-              delayWrite(&delay_secuencia, 150);
-
-              if(paso == 0)      { writeLedOn_GPIO(LEDS[0]); }
-              else if(paso == 1) { writeLedOff_GPIO(LEDS[0]); }
-              else if(paso == 2) { writeLedOn_GPIO(LEDS[1]); }
-              else if(paso == 3) { writeLedOff_GPIO(LEDS[1]); }
-              else if(paso == 4) { writeLedOn_GPIO(LEDS[2]); }
-              else if(paso == 5) { writeLedOff_GPIO(LEDS[2]); paso = -1; }
-              paso++;
-          }
-
-          //SECUENCIA 2:
-          else if (secuencia == 1) {
-              delayWrite(&delay_secuencia, 300);
-
-              if(paso == 0) {
-                  writeLedOn_GPIO(LEDS[0]); writeLedOn_GPIO(LEDS[1]); writeLedOn_GPIO(LEDS[2]);
-              }
-              else if(paso == 1) {
-                  writeLedOff_GPIO(LEDS[0]); writeLedOff_GPIO(LEDS[1]); writeLedOff_GPIO(LEDS[2]);
-                  paso = -1;
-              }
-              paso++;
-          }
-
-          //SECUENCIA 3:
-          else if (secuencia == 2) {
-              delayWrite(&delay_secuencia, 100);
-
-              if(paso == 0)      { toggleLed_GPIO(LEDS[0]); toggleLed_GPIO(LEDS[1]); toggleLed_GPIO(LEDS[2]); }
-              else if(paso == 1) { toggleLed_GPIO(LEDS[0]); }
-              else if(paso == 2) { toggleLed_GPIO(LEDS[0]); }
-              else if(paso == 3) { toggleLed_GPIO(LEDS[0]); toggleLed_GPIO(LEDS[1]); }
-              else if(paso == 4) { toggleLed_GPIO(LEDS[0]); }
-              else if(paso == 5) { toggleLed_GPIO(LEDS[0]); paso = -1; }
-              paso++;
-          }
-
-          //SECUENCIA 4:
-          else if (secuencia == 3) {
-              delayWrite(&delay_secuencia, 150);
-
-              if(paso == 0) {
-                  writeLedOn_GPIO(LEDS[0]); writeLedOn_GPIO(LEDS[2]); writeLedOff_GPIO(LEDS[1]);
-              }
-              else if(paso == 1) {
-                  writeLedOff_GPIO(LEDS[0]); writeLedOff_GPIO(LEDS[2]); writeLedOn_GPIO(LEDS[1]);
-                  paso = -1;
-              }
-              paso++;
-          }
-      }
-
-    }
-    /* USER CODE END 3 */
+	  }
+	  		  }
+    /* USER CODE BEGIN 3 */
 }
   /* USER CODE END 3 */
 
